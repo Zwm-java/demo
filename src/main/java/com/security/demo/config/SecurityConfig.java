@@ -4,12 +4,14 @@ package com.security.demo.config;
 import com.security.demo.handler.MyAuthenticationFailHandler;
 import com.security.demo.handler.MyAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 
 import javax.annotation.Resource;
@@ -37,15 +39,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/login").permitAll()
                 .antMatchers("/admin/").permitAll()
                 .antMatchers("/css/**").permitAll()
-                .antMatchers("/js/**").permitAll()
+                .antMatchers("/js/**").permitAll();
 //rbac 访问admin/rbac时，使用自定义hasPermission验证是否允许访问
-//                .antMatchers("/admin/admin", "/admin/vip", "/admin/root")
-//                .access("@rbacService.hasPermission(request , authentication)");
+        http.authorizeRequests()
+                .antMatchers("/admin/admin", "/admin/vip", "/admin/root")
+                .access("@rbacService.hasPermission(request , authentication)");
 
-                .antMatchers("/admin/admin").hasRole("admin")
-                .antMatchers("/admin/vip").hasRole("vip")
-                .antMatchers("/admin/root").hasRole("root")
-                .anyRequest().authenticated();
+//                .antMatchers("/admin/admin").hasRole("admin")
+//                .antMatchers("/admin/vip").hasRole("vip")
+//                .antMatchers("/admin/root").hasRole("root")
+//                .anyRequest().authenticated();
+
 
         http.formLogin()
                 .loginPage("/admin/login").permitAll()
@@ -67,35 +71,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         MyPasswordEncoder encoder1 = new MyPasswordEncoder();
-//        auth.userDetailsService(sysSecurityService)
-//                .passwordEncoder(encoder1);
+        auth.userDetailsService(sysSecurityService)
+                .passwordEncoder(encoder);
 
-        auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder())
-                .withUser("vip").password(new BCryptPasswordEncoder().encode("123456")).roles("vip", "admin")
-                .and()
-                .withUser("root").password(new BCryptPasswordEncoder().encode("123456")).roles("vip", "root", "admin")
-                .and()
-                .withUser("admin").password(new BCryptPasswordEncoder().encode("123456")).roles("admin");
+//        auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder())
+//                .withUser("vip").password(new BCryptPasswordEncoder().encode("123456")).roles("vip", "admin")
+//                .and()
+//                .withUser("root").password(new BCryptPasswordEncoder().encode("123456")).roles("vip", "root", "admin")
+//                .and()
+//                .withUser("admin").password(new BCryptPasswordEncoder().encode("123456")).roles("admin");
 
 
-        String userSQL = "SELECT NAME AS username,PASSWORD,state FROM sys_user WHERE NAME = ?";
-        String authoritySQL = "select c.username,a.authority from t_customer c,t_authority a," +
-                "t_customer_authority ca where ca.customer_id=c.id " +
-                "and ca.authority_id=a.id and c.username =?";
-        auth.jdbcAuthentication().passwordEncoder(encoder)
-                .dataSource(dataSource)
-                .usersByUsernameQuery(userSQL)
-                .authoritiesByUsernameQuery(authoritySQL);
+//        String userSQL = "SELECT NAME AS username,PASSWORD,state FROM sys_user WHERE NAME = ?";
+//        String authoritySQL = "select c.username,a.authority from t_customer c,t_authority a," +
+//                "t_customer_authority ca where ca.customer_id=c.id " +
+//                "and ca.authority_id=a.id and c.username =?";
+//        auth.jdbcAuthentication().passwordEncoder(encoder)
+//                .dataSource(dataSource)
+//                .usersByUsernameQuery(userSQL)
+//                .authoritiesByUsernameQuery(authoritySQL);
 
     }
 
     // 密码编译器
-//    @Bean
-//    //SysSecurityService : 自定义认证过程
-//    PasswordEncoder passwordEncoder() {
-//        return new MyPasswordEncoder();
-//
-//    }
+    @Bean
+    //SysSecurityService : 自定义认证过程
+    PasswordEncoder passwordEncoder() {
+        return new MyPasswordEncoder();
+
+    }
 
     //remember_me中，jdbc持久化操作
     @Autowired

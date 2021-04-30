@@ -1,6 +1,7 @@
 package com.security.demo.pojo;
 
 import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 @Table(name = "sys_role")
 @Entity
 @Data
-public class SysRole {
+public class SysRole implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
@@ -23,4 +24,8 @@ public class SysRole {
             inverseJoinColumns = {@JoinColumn(name = "permission_id")})
     private List<SysPermission> permissions;
 
+    @Override
+    public String getAuthority() {
+        return role;
+    }
 }

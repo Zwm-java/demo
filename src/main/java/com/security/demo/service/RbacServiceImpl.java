@@ -50,11 +50,12 @@ public class RbacServiceImpl implements RbacService {
         if (null != principal && principal instanceof UserDetails) {
             String username = ((UserDetails)
                     principal).getUsername();
+
             //用户的url权限
             Set<String> urls = new HashSet<>();
             //保存用户的资源权限
             Set<String> curds = new HashSet<>();
-            SysUser sysUser = sysUserRepository.findByName(username);
+            SysUser sysUser = sysUserRepository.findByName("admin");
             //通过获取的认证信息，将用户的url权限以及资源权限进行封装
             for (SysRole role : sysUser.getRoles()) {
 

@@ -30,8 +30,7 @@ public class SysPermission {
     private List permissions;
 
     public List getPermissions() {
-        return
-                Arrays.asList(this.permission.trim().split("|"));
+        return Arrays.asList(this.permission.trim().split("|"));
     }
 
     public void setPermissions(List permissions) {
